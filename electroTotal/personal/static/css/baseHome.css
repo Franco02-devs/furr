@@ -1,0 +1,272 @@
+/* General Styling */
+body {
+    background-color: #ffffff;
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+/* Main container */
+.main-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f4f6f9;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background-color: #1E3A5F; /* Azul */
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: auto;
+}
+
+.sidebar .logo {
+    font-size: 2em;
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.sidebar nav a {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 1.1em;
+    font-weight: bold;
+    padding: 12px 20px;
+    border-radius: 5px;
+    margin: 12px 0;
+    display: block;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar nav a:hover {
+    background-color: #0056b3;
+    color: white;
+}
+
+.sidebar nav a.active {
+    background-color: rgb(241, 177, 0); /* Amarillo */
+}
+
+/* Main content */
+.content {
+    flex: 1;
+    padding: 30px;
+    background-color: #fff;
+    overflow-y: auto;
+}
+
+.profile-info {
+    background-color: #f4f6f9;
+    padding: 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-info img {
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    margin-right: 20px;
+}
+
+.profile-info .details {
+    color: #333;
+}
+
+.profile-info .details h2 {
+    margin: 0;
+    font-size: 1.8em;
+    font-weight: bold;
+}
+
+.profile-info .details p {
+    margin: 5px 0;
+    color: #666;
+}
+
+.section-title {
+    font-size: 1.6em;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+    padding-left:20px ;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+.card 
+
+.card h3 {
+    font-size: 1.4em;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.card p {
+    color: #666;
+    
+    font-size: 1.2em;
+}
+
+.btn-primary {
+    display: inline-block;
+    padding: 12px 25px;
+    background-color: #3d94f7;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+
+
+/* Estilos para pantallas más pequeñas (móviles) */
+@media (max-width: 1024px) {
+    /* Sidebar */
+    .sidebar {
+        width: 180px;  /* Ajustamos un poco más que en dispositivos muy pequeños */
+    }
+    
+    .sidebar nav a {
+        font-size: 1em;  /* Un tamaño de fuente un poco mayor para ser legible */
+        padding: 10px 15px;
+    }
+    
+    .sidebar .logo {
+        font-size: 1.5em;  /* Un logo un poco más grande */
+    }
+    
+    /* Perfil */
+    .profile-info .details h2 {
+        font-size: 1.4em;
+    }
+
+    .profile-info .details p {
+        font-size: 0.9em;
+    }
+    
+    /* Ajustes de tarjetas */
+    .cards {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Varias tarjetas para tamaños medios */
+    }
+    
+    /* Botón */
+    .btn-primary {
+        font-size: 1em;
+        padding: 12px 25px;
+    }
+
+    /* Dashboard */
+    .dashboard-grid {
+        font-size: 1em;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));  /* Ajuste para pantallas intermedias */
+    }
+    
+}
+
+@media (max-width: 768px) {
+    /* Aquí puedes poner reglas para móviles medianos, como las tabletas */
+    .sidebar {
+        width: 150px;
+    }
+    
+    .sidebar nav a {
+        font-size: 0.9em;
+        padding: 8px 12px;
+    }
+    
+    .profile-info .details h2 {
+        font-size: 1.2em;
+    }
+
+    .profile-info .details p {
+        font-size: 0.8em;
+    }
+    
+    .cards {
+        grid-template-columns: 1fr;  /* Una sola columna para dispositivos más pequeños */
+    }
+    
+    .btn-primary {
+        font-size: 0.9em;
+        padding: 10px 20px;
+    }
+
+    .dashboard-grid {
+        font-size: smaller;
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Sidebar */
+    .sidebar {
+        width: 120px;
+        height: auto;
+    }
+    
+    .sidebar nav a {
+        font-size: 0.8em;
+        padding: 8px 12px;
+    }
+    
+    .sidebar .logo {
+        font-size: 1em;
+    }
+    
+    /* Perfil */
+    .profile-info .details h2 {
+        font-size: 1em;
+    }
+
+    .profile-info .details p {
+        font-size: 0.7em;
+    }
+    
+    /* Ajustes de tarjetas */
+    .cards {
+        grid-template-columns: 1fr; /* Mostrar una columna en móviles */
+    }
+    
+    /* Botón */
+    .btn-primary {
+        font-size: 0.8em;
+        padding: 10px 20px;
+    }
+
+    /* Dashboard */
+    .dashboard-grid {
+        font-size: smaller;
+        grid-template-columns: 1fr;
+    }
+}

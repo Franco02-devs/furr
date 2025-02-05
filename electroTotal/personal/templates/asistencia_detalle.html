@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block extra_styles %}
+  <style>
+    /* Estilos para hacer una presentación tipo pizarra/checklist */
+    .detalle-asistencia {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin-top: 20px;
+      font-family: Arial, sans-serif;
+    }
+
+    .detalle-asistencia h2 {
+      color: #333;
+      font-size: 1.8rem;
+    }
+
+    .detalle-asistencia ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .detalle-asistencia li {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .detalle-asistencia li span {
+      font-weight: bold;
+    }
+
+    .detalle-asistencia .btn {
+      background-color:rgb(252, 128, 26);
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 20px;
+      width: 100%;  /* Ocupa todo el ancho */
+    }
+
+    .detalle-asistencia .btn-danger {
+      background-color:rgb(250, 100, 90);
+    }
+
+    .detalle-asistencia .btn:hover {
+      background-color: #f44336;
+    }
+
+    .detalle-asistencia .correccion-info {
+      background-color: #fff3cd;
+      border: 1px solid #ffeeba;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+
+    .detalle-asistencia .correccion-info p {
+      margin: 5px 0;
+      font-size: 1rem;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="detalle-asistencia">
+    <h2>Detalle de Asistencia</h2>
+
+    <ul>
+      <li>
+        <span>Tipo de Registro:</span> {{ asistencia.tipo|upper }}
+      </li>
+      <li>
+        <span>Lugar:</span> {{ asistencia.lugar|upper }}
+      </li>
+      <li>
+        <span>Campo:</span> 
+        {% if asistencia.lugar_campo %}
+          {{ asistencia.lugar_campo }}
+        {% else %}
+          NO
+        {% endif %}
+      </li>
+      <li>
+        <span>Fecha original de Asistencia:</span> {{ asistencia.fecha|date:"d/m/Y h:i A" }}
+      </li>
+      <li>
+        <span>Fecha Diferida:</span> 
+        {% if asistencia.fecha_diferida %}
+          {{ asistencia.fecha_diferida|date:"d/m h:i A" }}
+        {% else %}
+          NO
+        {% endif %}
+      </li>
+      <li>
+        <span>Foto:</span>
+        {% if asistencia.foto %}
+          <a href="{{ asistencia.foto.url }}" target="_blank">Ver Foto</a>
+        {% else %}
+          No disponible
+        {% endif %}
+      </li>
+    </ul>
+    {% if asistencia.fecha_diferida %}
+      <div class="correccion-info">
+        <h3>Corrección Automática</h3>
+        <p>El programa detectó un registro a destiempo y sugiere corrección automática.</p>
+        <p><strong>Se corregirá la fecha, ahora la fecha de registro será la fecha diferida:</strong></p>
+        <p><strong>Fecha anterior:</strong> {{ asistencia.finalFecha|date:"d/m/Y h:i A" }}</p>
+        <p><strong>Fecha corregida:</strong> {{ asistencia.fecha_diferida|date:"d/m/Y h:i A" }}</p>
+      </div>
+
+      <form method="POST" id="form-correccion">
+        {% csrf_token %}
+        <button type="submit" name="corregirFecha" class="btn" onclick="confirmarCorreccion()">Corrección Automática</button>
+      </form>
+    {% endif %}
+
+    <div class="buttons">
+       <a href="{% url 'asistencias_trabajador' trabajador.id %}" class="btn btn-danger">Volver a Asistencias</a>
+    </div>
+  </div>
+
+  <script>
+    function confirmarCorreccion() {
+      // Mostramos el mensaje de confirmación
+      var confirmacion = confirm("¿Estás seguro de que deseas realizar la corrección automática?");
+      
+      // Si el usuario acepta, enviamos el formulario
+      if (confirmacion) {
+        document.getElementById("form-correccion").submit();
+      } else {
+        // Si el usuario no acepta, no hacemos nada
+        return false;
+      }
+    }
+  </script>
+{% endblock %}

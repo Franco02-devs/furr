@@ -1,0 +1,173 @@
+{% extends 'baseHome.html' %}
+{% block extra_styles2 %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+    }
+    .container {
+        max-width: 100%;
+        background: #fff;
+        margin: auto;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 20px;
+    }
+    .records-wrapper {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+    .record {
+        padding: 15px;
+        border-radius: 8px;
+        width: 48%;
+    }
+    .in-record {
+        background-color: #d4edda;
+        border-left: 5px solid #28a745;
+    }
+    .out-record {
+        background-color: #f8d7da;
+        border-left: 5px solid #dc3545;
+    }
+    .record h3 {
+        margin: 0;
+        color: #333;
+    }
+    .record p {
+        margin: 5px 0;
+        color: #555;
+    }
+    .photo img {
+        width: 100%;
+        max-height: 200px;
+        object-fit: cover;
+        border-radius: 5px;
+        margin-top: 10px;
+    }
+    .work-hours {
+        background: #cce5ff;
+        border-left: 5px solid #007bff;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+        text-align: center;
+        font-size: 18px;
+        color: #004085;
+    }
+    .correction-box {
+        background: #ffeeba;
+        padding:1px;
+        border-radius: 8px;
+        margin-top: 30px;
+        color: #856404;
+    }
+    .btn {
+        display: block;
+        text-align: center;
+        background: #007bff;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        text-decoration: none;
+        margin-top: 20px;
+    }
+    .btn:hover {
+        background: #0056b3;
+    }
+</style>
+{% endblock %}
+
+{% block content_dashboard %}
+    <div class="container">
+        <h1>Detalles de Asistencia</h1>
+        <h1><strong>Colaborador:</strong> {{ attendanceRecord.collaborator.user.first_name }}</h1>
+
+        <div class="records-wrapper">
+            <!-- Registro de Entrada -->
+            <div class="record in-record">
+                <h3>Entrada</h3>
+                <p><strong>Fecha y Hora:</strong> {{ attendanceRecord.inRecord.dateTime }}</p>
+                {%if attendanceRecord.inRecord.placeIsOffice%}
+                    <p><strong>Lugar:</strong> Oficina</p>
+                {%else%}
+                    <p><strong>Lugar:</strong> {{ attendanceRecord.inRecord.placeDescription|default:"Campo" }}</p>
+                {%endif%}
+                {% if attendanceRecord.inRecord.unTimelyDateTime %}
+                    <p style="color: red;"><strong>Marcó fuera de tiempo:</strong> {{ attendanceRecord.inRecord.unTimelyDateTime }}</p>
+                    <div class="correction-box">
+                        <h3>Corrección Automática</h3>
+                        <p>El programa detectó un registro a destiempo y sugiere corrección automática.</p>
+                        <p><strong>Se corregirá la fecha, ahora la fecha de registro será la fecha diferida:</strong></p>
+                        <p><strong>Fecha anterior:</strong> {{ attendanceRecord.inRecord.dateTime|date:"d/m/Y h:i A" }}</p>
+                        <p><strong>Fecha corregida:</strong> {{ attendanceRecord.inRecord.unTimelyDateTime|date:"d/m/Y h:i A" }}</p>
+                    </div>
+                {% endif %}
+                {% if attendanceRecord.inRecord.photo %}
+                    <div class="photo">
+                        <img src="{{ attendanceRecord.inRecord.photo.url }}" alt="Foto de entrada">
+                    </div>
+                {% endif %}
+
+            </div>
+
+            <!-- Registro de Salida -->
+            {% if attendanceRecord.outRecord %}
+            <div class="record out-record">
+                <h3>Salida</h3>
+                <p><strong>Fecha y Hora:</strong> {{ attendanceRecord.outRecord.dateTime }}</p>
+                {%if attendanceRecord.outRecord.placeIsOffice%}
+                    <p><strong>Lugar:</strong> Oficina</p>
+                {%else%}
+                    <p><strong>Lugar:</strong> {{ attendanceRecord.outRecord.placeDescription|default:"Campo" }}</p>
+                {%endif%}
+                {% if attendanceRecord.outRecord.unTimelyDateTime %}
+                    <p style="color: red;"><strong>Marcó fuera de tiempo:</strong> {{ attendanceRecord.outRecord.unTimelyDateTime }}</p>
+                    <div class="correction-box">
+                        <h3>Corrección Automática</h3>
+                        <p>El programa detectó un registro a destiempo y sugiere corrección automática.</p>
+                        <p><strong>Se corregirá la fecha, ahora la fecha de registro será la fecha diferida:</strong></p>
+                        <p><strong>Fecha anterior:</strong> {{ attendanceRecord.outRecord.dateTime|date:"d/m/Y h:i A" }}</p>
+                        <p><strong>Fecha corregida:</strong> {{ attendanceRecord.outRecord.unTimelyDateTime|date:"d/m/Y h:i A" }}</p>
+                    </div>
+                {% endif %}
+                {% if attendanceRecord.outRecord.photo %}
+                    <div class="photo">
+                        <img src="{{ attendanceRecord.outRecord.photo.url }}" alt="Foto de salida">
+                    </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <p style="color: red; text-align: center;">No se ha registrado salida.</p>
+            {% endif %}
+        </div>
+
+        <!-- Cálculo de Horas Trabajadas -->
+        <div class="work-hours">
+            <h3>Horas Trabajadas</h3>
+            {% if worked_hours %}
+                <p><strong>{{ worked_hours|floatformat:2 }} horas trabajadas</strong></p>
+
+                {% if worked_hours < 2 or worked_hours > 10 %}
+                    <div class="correction-box">
+                        <h3>Detección de registro extraño</h3>
+                        <p>El programa detectó un registro a extraño, muy pocas o demasiadas horas de trabajo ({{ worked_hours|floatformat:2 }}), y sugiere corrección automática.</p>
+                        <p><strong>Eliminación del registro</strong></p>
+                    </div>
+                {% endif %}
+            {% else %}
+                <p><strong>No disponible</strong></p>
+            {% endif %}
+
+        </div>
+
+        <a href="{% url 'home' %}" class="btn">Volver</a>
+    </div>
+{% endblock %}

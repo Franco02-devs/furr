@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block extra_styles %}
+    <style>
+        /* Estilo para el contenedor del trabajador */
+        .collaborator-details {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 60%;
+            margin: 50px auto;
+        }
+
+        /* Estilo para los detalles */
+        .collaborator-details p {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .collaborator-details strong {
+            color: #006699; /* Color para las etiquetas */
+        }
+
+        /* Botón de crear otro trabajador */
+        .btn-submit {
+            display: inline-block;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: white;
+            background-color: #28a745;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            background-color: #218838;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="collaborator-details">
+        <h1>Colaborador</h1>
+        <p><strong>Usuario:</strong> {{ collaborator.user.username }}</p>
+        <p><strong>Nombre:</strong> {{ collaborator.user.first_name }}</p>
+        <p><strong>Rol Preferido:</strong> {{ collaborator.favoritePlaceIsOffice }}</p>
+        <p><strong>¿Esta activo?:</strong> {{ collaborator.isWorking }}</p>
+        
+        <a href="{% url 'createCollaborator' %}" class="btn-submit">
+            Inscribir a otro colaborador
+        </a>
+    </div>
+{% endblock %}

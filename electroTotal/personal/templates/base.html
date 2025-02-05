@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELECTROTOTAL</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+    {% block extra_styles %}{% endblock %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <a href="{% url 'home' %}">
+                <img src="https://i.ibb.co/D91DT3B/logo-removebg-preview-1.png" alt="ELECTROTOTAL">
+            </a>
+        </div>
+        <nav class="navbar">
+            <ul class="navbar-links">
+                <li class="dropdown">
+                    <a href="#"><i class="fa fa-chevron-down"></i>  Información</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Quienes somos</a></li>
+                        <li><a href="#">Misión y visión</a></li>
+                        <li><a href="#">Contacto</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#"><i class="fa fa-chevron-down"></i>  Servicios</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Consultoría</a></li>
+                        <li><a href="#">Mantenimiento</a></li>
+                        <li><a href="#">Soporte técnico</a></li>
+                    </ul>
+                </li>
+            </ul>
+            {% block search %}{% endblock %}
+            <ul class="navbar-links user-links">
+                {% if user.is_authenticated %}
+                    <li class="dropdown">
+                        <a href="#"><i class="fa fa-user"></i> {{ user.username }}</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">Sobre mí</a></li>
+                            <li><a href="{% url 'logout' %}">Cerrar sesión</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li><a href="#"><i class="fa fa-user-circle"></i>  Registrarse</a></li>
+                    <li><a href="{% url 'login' %}"><i class="fa fa-user"></i>  Iniciar sesión</a></li>
+                {% endif %}
+            </ul>
+            <div id="menu" class="bx bx-menu"></div>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-contact">
+                <h3>Contacto</h3>
+                <p>📞 Teléfono: +1 234 567 890</p>
+                <p>✉️ Email: info@electrototal.com</p>
+            </div>
+            <div class="footer-socials">
+                <h3>Redes Sociales</h3>
+                <a href="#">Facebook |</a>
+                <a href="#">Computrabajo |</a>
+                <a href="#">LinkedIn</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 ELECTROTOTAL. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/base.js' %}"></script>
+</body>
+
+</html>

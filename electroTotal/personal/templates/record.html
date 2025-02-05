@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <main class="form-container">
+        <h1 class="titulo-confirmacion">Registro</h1>
+        
+        <div class="mensaje-exito">
+            <div class="info-dato-container">
+                <p><strong>Colaborador:</strong></p>
+                <p class="info-dato">{{ record.collaborator.user.first_name }}</p>
+            </div>
+            <div class="info-dato-container">
+                <p><strong>Tipo de Asistencia:</strong></p>
+                <p class="info-dato"> {% if record.typeIsInput %}Entrada{% else %}Salida{% endif %}</p>
+            </div>
+            <div class="info-dato-container">
+                <p><strong>Fecha y Hora:</strong></p>
+                <p class="info-dato">{{ record.dateTime }}</p>
+            </div>
+            <div class="info-dato-container">
+                <p><strong>Hora Fuera de Tiempo:</strong></p>
+                <p class="info-dato"> {% if record.unTimelyDateTime %}{{ record.unTimelyDateTime }}{% else %}NO{% endif %}</p>
+            </div>
+            <div class="info-dato-container">
+                <p><strong>Lugar de Registro:</strong></p>
+                <p class="info-dato" > {% if record.placeIsOffice %}Oficina{% else %}{{ record.placeDescription }}{% endif %}</p>
+            </div>
+
+            <div class="info-dato-container">
+                <p><strong>Foto:</strong></p>
+                <a href="{{ record.photo.url }}" target="_blank" class="link-foto">Ver Foto de Asistencia</a>
+            </div>
+        </div>
+
+        <!-- Botón para volver a inicio -->
+        <a href="{% url 'home' %}" class="btn-volver">Volver a inicio</a>
+    </main>
+{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        /* Estilos generales */
+        .titulo-confirmacion {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #003366;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .mensaje-exito {
+            padding: 20px;
+            background-color: #e1fac1;
+            border-radius: 8px;
+            border: 1px solid #c1e7a4;
+            color: #0d9c00;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .info-dato-container {
+            margin-bottom: 15px; /* Espaciado entre cada grupo de información */
+        }
+
+        .info-dato-container p {
+            margin: 0; /* Elimina los márgenes de los párrafos */
+        }
+
+        .info-dato {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #003366;
+            margin-left: 10px;
+        }
+
+        .tipo {
+            text-transform: uppercase;
+            color: #004d99;
+        }
+
+        .link-foto {
+            font-size: 1.2rem;
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .link-foto:hover {
+            color: #004080;
+        }
+
+        .btn-volver {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color:rgb(53, 170, 248);
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-volver:hover {
+            background-color: #0056b3;
+        }
+
+        /* Estilo de la imagen para foto (oculta, se utiliza el link en su lugar) */
+        .foto-asistencia {
+            max-width: 100px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+{% endblock %}

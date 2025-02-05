@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_styles %}
+    <style>
+
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>MARCAR SALIDA</h1>
+    <form method="post" enctype="multipart/form-data" class="create-user-form">
+        {% csrf_token %}
+        <div class="form-field">
+            <p><strong>Bienvenido, </strong> {{ request.user.first_name }}</p>
+        </div>
+        
+        {% if form.non_field_errors %}
+            <div class="form-error">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% for field in form %}
+            <div class="form-field">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.errors %}
+                    <div class="error-message">
+                        {% for error in field.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="btn-submit">Marcar</button>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const isUnTimelyRecordField = document.querySelector('#id_isUnTimelyRecord');
+    const unTimelyDateTimeField = document.querySelector('#id_unTimelyDateTime').parentElement;
+    
+    function toggleFields() {
+        if (isUnTimelyRecordField.checked) {
+            unTimelyDateTimeField.style.display = 'block';
+        } else {
+            unTimelyDateTimeField.style.display = 'none';
+        }
+    }
+
+    isUnTimelyRecordField.addEventListener('change', toggleFields);
+    toggleFields();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,206 @@
+<!-- home.html -->
+{% extends 'baseHome.html' %}
+{% load static %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+{% block extra_styles2 %}
+<style>
+    /* Clase base */
+    .asistencia-box2{
+        flex: 1;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #28a745, #34d058);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        height: 250px;
+        width: 250px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        text-align: center;
+    }
+
+    /* Título */
+    .asistencia-box2, asistenciarojo-box2  h3 {
+        font-size: 1.5em;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+
+    /* Estilo del icono */
+    .asistencia-box2 .icono {
+        font-size: 50px;
+        margin-bottom: 10px;
+    }
+
+    /* Enlace (si es necesario agregar estilo) */
+    .asistencia-link {
+        display: block;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+    }
+    .asistenciarojo-box2 {
+        flex: 1;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: linear-gradient(135deg,rgb(167, 40, 40),rgb(208, 52, 52));
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        height: 250px;
+        width: 250px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        text-align: center;
+    }
+
+    /* Título */
+    .asistenciarojo-box2  h3 {
+        font-size: 1.5em;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+
+    /* Estilo del icono */
+    .asistenciarojo-box2 .icono {
+        font-size: 50px;
+        margin-bottom: 10px;
+    }
+
+    .asistencia-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 20px;
+        color: white;
+        font-weight: bold;
+    }
+    
+    .asistencia-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom:30px;
+    }
+    
+    .asistencia-box {
+        flex: 1;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        background-color: #f9f9f9;
+        height: 250px;
+    }
+
+    .usuarios-lista {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .usuario-activo {
+        padding: 10px;
+        background-color: #e0e0e0;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+    
+    .usuario-activo p {
+        margin: 0;
+    }
+    @media (max-width: 768px) {
+        .asistencia-container {
+            flex-direction: column;
+        }
+    
+        .asistencia-box, .asistencia-box2 {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content_dashboard %}
+    <div class="profile-info">
+        <img src="https://www.gravatar.com/avatar/xyz" alt="Foto de perfil">
+        <div class="details">
+            <h2>{{ user.username }}</h2>
+            {% if user.collaborator.favoritePlaceIsOffice %}
+                <p>Rol preferido: OFICINA</p>
+            {% else %}
+                <p>Rol preferido: CAMPO</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="asistencia-container">
+        {% if user.is_staff%}
+            <div class="asistencia-box2">
+                <i class="fa fa-clock icono"></i>
+                <h3>GESTION DE ASISTENCIAS</h3>
+                <a href="{% url 'adminDashboard' %}" class="asistencia-link"></a>
+            </div>
+
+        {% elif user.collaborator.isWorking == -1 %}
+            <div class="asistencia-box2">
+                <i class="fa fa-clock icono"></i>
+                <h3>MARCAR ENTRADA</h3>
+                <a href="{% url 'registerInput' %}" class="asistencia-link"></a>
+            </div>
+        {% else %}
+            <div class="asistenciarojo-box2">
+                <i class="fa fa-clock icono"></i>
+                <h3>MARCAR SALIDA</h3>
+                <a href="{% url 'registerOutput' %}" class="asistencia-link"></a>
+            </div>
+        {% endif %}
+
+        <div class="asistencia-box">
+            <h3>Colaboradores Activos</h3>
+            <div class="usuarios-lista">
+                {% for collaborator in collaborators %}
+                    {% if collaborator.isWorking != -1 %}
+                        <div class="usuario-activo">
+                            <p>🟢 {{ collaborator.user.username }} </p>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">Información General</div>
+    <div class="cards">
+        <div class="card">
+            <h3>Mis Asistencias</h3>
+            <p>Ver todas mis asistencias registradas.</p>
+            <a href="{% url 'myRecords' %}" class="btn-primary">Ver Asistencias</a>
+        </div>
+
+        <div class="card">
+            <h3>Horas Trabajadas</h3>
+            <p>Ver mis horas trabajadas esta semana.</p>
+            <a href="{% url 'hoursWorked' %}" class="btn-primary">Ver Horas</a>
+        </div>
+
+        <div class="card">
+            <h3>Registrar Asistencia</h3>
+            <p>Registrar mi asistencia de hoy.</p>
+            <a href="{% url 'registerInput' %}" class="btn-primary">Registrar</a>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,26 @@
+<!-- create_trabajador.html -->
+
+{% extends 'base.html' %}
+{% block content %}
+<div class="form-container">
+    <h1>Inscribir a un nuevo colaborador</h1>
+    <form method="post" class="create-user-form"> 
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-field">
+          {{ field.label_tag }}
+          {{ field }}
+          {% if field.errors %}
+            <div class="error-message">
+              {% for error in field.errors %}
+                <p>{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+        <button type="submit" class="btn-submit">Inscribir colaborador</button>
+    </form>
+</div>
+{% endblock %}
+

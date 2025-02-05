@@ -1,0 +1,133 @@
+{% extends 'baseHome.html' %}
+
+{% block extra_styles2 %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+    }
+    .container {
+        max-width: 90%;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        margin-top: 20px;
+    }
+    h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 20px;
+    }
+    .filter-container {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .filter-container select {
+        padding: 8px;
+        font-size: 16px;
+    }
+    .table-wrapper {
+        overflow-x: auto;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    th, td {
+        padding: 12px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+    }
+    th {
+        background-color: #007bff;
+        color: white;
+    }
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+    .total-hours {
+        text-align: center;
+        font-size: 28px;
+        font-weight: bold;
+        color: #007bff;
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content_dashboard %}
+    <div class="container">
+        <h1>Horas Trabajadas</h1>
+
+        <!-- Filtros -->
+        <div class="filter-container">
+            <form method="GET">
+                <label for="period">Periodo:</label>
+                <select name="period" id="period" onchange="this.form.submit()">
+                    <option value="week" {% if period == 'week' %}selected{% endif %}>Esta Semana</option>
+                    <option value="month" {% if period == 'month' %}selected{% endif %}>Este Mes</option>
+                </select>
+
+                {% if collaborators %}
+                    <label for="collaborator">Colaborador:</label>
+                    <select name="collaborator" id="collaborator" onchange="this.form.submit()">
+                        <option value="">-- Selecciona --</option>
+                        {% for collaborator in collaborators %}
+                            <option value="{{ collaborator.id }}" {% if selected_collaborator_id == collaborator.id|stringformat:"s" %}selected{% endif %}>
+                                {{ collaborator.user.first_name }} {{ collaborator.user.last_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+            </form>
+        </div>
+        <div class="total-hours">
+            Total de horas trabajadas: {% if total_hours %}{{ total_hours }}{% else %}0{% endif %}
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Entrada</th>
+                        <th>Salida</th>
+                        <th>Horas Trabajadas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                        <tr>
+                            <td>{{ record.inRecord.dateTime|date:"d/m/Y" }}</td>
+                            <td>{{ record.inRecord.dateTime|time:"h:i A" }}</td>
+                            <td>
+                                {% if record.outRecord %}
+                                    {{ record.outRecord.dateTime|time:"h:i A" }}
+                                {% else %}
+                                    <span style="color: red;">Sin salida</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if record.outRecord %}
+                                    {{ record.hours_worked }}
+                                {% else %}
+                                    <span style="color: orange;">No disponible</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: gray;">No hay registros disponibles.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        
+    </div>
+{% endblock %}

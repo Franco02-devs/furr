@@ -1,0 +1,30 @@
+<!-- baseHome.html -->
+{% extends 'base.html' %}
+
+{% block extra_styles %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/baseHome.css' %}">
+    {% block extra_styles2 %}{% endblock %}
+{% endblock %}
+
+
+{% block content %}
+    <div class="main-container">
+        <div class="sidebar">
+            <nav>
+                <a href="{% url 'home' %}" class="{% if request.path == '/personal/' %}active{% endif %}">Inicio</a>
+                <a href="{% url 'myRecords' %}" class="{% if request.path == '/personal/myRecords/' %}active{% endif %}">Mis Asistencias</a>
+                <a href="{% url 'hoursWorked' %}" class="{% if request.path == '/personal/hoursWorked/' %}active{% endif %}">Horas Trabajadas</a>
+                {% if user.isAdmin or user.is_staff %}
+                    <a href="{% url 'adminDashboard' %}" class="{% if request.path == '/personal/adminDashboard/' %}active{% endif %}">Administración</a>
+                {% endif %}
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            {% block content_dashboard %}
+            {% endblock %}
+        </div>
+    </div>
+{% endblock %}

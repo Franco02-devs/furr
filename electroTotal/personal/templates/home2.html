@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block extra_styles %}
+    <style>
+        /* Estilos generales para el Dashboard en Home */
+        .titledash {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1em; /* Tamaño del texto, ajusta como lo necesites */
+        }
+
+        .home-container {
+            background-color: rgba(47, 53, 59, 0.9); /* Gris oscuro con 80% de opacidad */
+            background-size: cover;
+            padding: 30px;
+            border-radius: 1px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.3);
+            margin: 20px;
+        }
+
+        /* Contenedor para los cuadros */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Dos columnas de igual tamaño */
+            gap: 15px; /* Espacio entre los cuadros */
+        }
+
+        /* Estilo de cada cuadro */
+        .dashboard-box {
+            position: relative;
+            background-color: rgba(255, 255, 255, 0.2); /* Transparente */
+            border-radius: 1px;
+            overflow: hidden;
+            transition: transform 3s ease;
+            height: 300px; /* Ajusta el tamaño del cuadro */
+            width: 100%;  /* Ajusta el ancho para que ocupe todo el espacio disponible */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dashboard-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.7; /* Imagen suave */
+            transition: opacity 0.3s ease;
+        }
+
+        .dashboard-box:hover {
+            background-color: rgba(255, 255, 255, 0.5); /* Transparente */
+            border-color: white;
+            border-width: 2px;  /* Establece el grosor del borde al pasar el mouse */
+            border-style: solid; /* Asegura que el borde sea visible */
+        }
+
+        .dashboard-box:hover img {
+            opacity: 1; /* Imagen más nítida al hacer hover */
+        }
+
+        .dashboard-box .label {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: white;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="home-container">
+        <h1 class="titledash">{{ mensaje }}</h1>
+
+        <div class="dashboard-grid">
+            <!-- Cuadro para "User" -->
+            <div class="dashboard-box">
+                <img src="https://peruretail.sfo3.cdn.digitaloceanspaces.com/wp-content/uploads/photo1683313035.jpeg" alt="User">
+                <div class="label">User</div>
+                <a href="{% url 'home' %}" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></a>
+            </div>
+
+            <!-- Cuadro para "Admin" -->
+            <div class="dashboard-box">
+                <img src="https://bs-uploads.toptal.io/blackfish-uploads/components/open_graph_image/8961388/og_image/optimized/0823-DashboardDesign-Dan-Social-e319a5a8a7ceb75b9e5010740700d409.png    " alt="Admin">
+                <div class="label">Admin</div>
+                <a href="{% url 'admin_dashboard' %}" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

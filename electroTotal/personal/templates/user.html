@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block extra_styles %}
+    <style>
+        /* Estilo para el contenedor del usuario */
+        .user-details {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 60%;
+            margin: 50px auto;
+        }
+
+        /* Estilo para los detalles */
+        .user-details p {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .user-details strong {
+            color: #006699; /* Color para las etiquetas */
+        }
+
+        /* Botón para crear otro usuario */
+        .btn-submit {
+            display: inline-block;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: white;
+            background-color: #28a745;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            background-color: #218838;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="user-details">
+        <h1>Usuario</h1>
+        <p><strong>Nombre de Usuario:</strong> {{ user.username }}</p>
+        <p><strong>Nombre de trabajador:</strong> {{ user.first_name }}</p>
+        <p><strong>¿Es administrador?:</strong> {{ user.isAdmin }}</p>
+        <p><strong>Fecha de Creación:</strong> {{ user.date_joined }}</p>
+
+        <!-- Botón para crear otro usuario -->
+        <a href="{% url 'createUser' %}" class="btn-submit">
+            Crear Otro Usuario
+        </a>
+    </div>
+{% endblock %}
