@@ -25,7 +25,7 @@
         text-align: center;
         margin-bottom: 20px;
     }
-    .filter-container select {
+    .filter-container select, .filter-container input {
         padding: 8px;
         font-size: 16px;
     }
@@ -67,10 +67,18 @@
         <div class="filter-container">
             <form method="GET">
                 <label for="period">Periodo:</label>
-                <select name="period" id="period" onchange="this.form.submit()">
+                <select name="period" id="period" onchange="toggleDateInputs(); this.form.submit()">
                     <option value="week" {% if period == 'week' %}selected{% endif %}>Esta Semana</option>
                     <option value="month" {% if period == 'month' %}selected{% endif %}>Este Mes</option>
+                    <option value="custom" {% if period == 'custom' %}selected{% endif %}>Personalizado</option>
                 </select>
+
+                <span id="date-filters" style="display: {% if period == 'custom' %}inline{% else %}none{% endif %};">
+                    <label for="start_date">Desde:</label>
+                    <input type="date" name="start_date" id="start_date" value="{{ start_date }}" onchange="this.form.submit()">
+                    <label for="end_date">Hasta:</label>
+                    <input type="date" name="end_date" id="end_date" value="{{ end_date }}" onchange="this.form.submit()">
+                </span>
 
                 {% if collaborators %}
                     <label for="collaborator">Colaborador:</label>
@@ -85,6 +93,7 @@
                 {% endif %}
             </form>
         </div>
+
         <div class="total-hours">
             Total de horas trabajadas: {% if total_hours %}{{ total_hours }}{% else %}0{% endif %}
         </div>
@@ -127,7 +136,17 @@
                 </tbody>
             </table>
         </div>
-
-        
     </div>
+
+    <script>
+        function toggleDateInputs() {
+            var period = document.getElementById("period").value;
+            var dateFilters = document.getElementById("date-filters");
+            if (period === "custom") {
+                dateFilters.style.display = "inline";
+            } else {
+                dateFilters.style.display = "none";
+            }
+        }
+    </script>
 {% endblock %}

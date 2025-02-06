@@ -6,14 +6,10 @@ from django.contrib.auth.forms import AuthenticationForm
 from .forms import CustomUserCreationForm, CollaboratorCreationForm, InputRecordForm, OutputRecordForm
 from .models import CustomUser, Collaborator, Record, AttendanceRecord
 from .scripts import generateUniqueUsername
-from openpyxl import Workbook
-from openpyxl.styles import Alignment,Font
-from django.http import HttpResponse
-from openpyxl.utils import get_column_letter
-from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Sum, F, ExpressionWrapper, fields
 from django.utils.timezone import now
+from datetime import datetime
 
 ## VIEWS
 ### LOGIN
@@ -201,51 +197,7 @@ def myRecords(request):
         'collaborators': collaborators,
         'selected_collaborator_id': selected_collaborator_id
     })
-@login_required
-def hoursWorked(request):
-    user = request.user
-    today = now().date()
-
-    period = request.GET.get('period', 'week')
-    start_date = today - timedelta(days=today.weekday()) if period == 'week' else today.replace(day=1)
-    
-    if user.is_staff or user.isAdmin:
-        collaborators = Collaborator.objects.all()
-        selected_collaborator_id = request.GET.get('collaborator', None)
-
-        if selected_collaborator_id:
-            records = AttendanceRecord.objects.filter(
-                collaborator_id=selected_collaborator_id,
-                inRecord__dateTime__date__gte=start_date
-            )
-        else:
-            records = AttendanceRecord.objects.none()
-    else:
-        collaborators = None
-        selected_collaborator_id=None
-        records = AttendanceRecord.objects.filter(
-            collaborator=user.collaborator,
-            inRecord__dateTime__date__gte=start_date
-        )
-
-    records = records.annotate(
-        hours_worked=ExpressionWrapper(
-            F('outRecord__dateTime') - F('inRecord__dateTime'),
-            output_field=fields.DurationField()
-        )
-    )
-    total_hours = records.aggregate(Sum('hours_worked'))['hours_worked__sum']
-    if total_hours:
-        total_hours = str(total_hours).split(".")[0]
-
-    return render(request, 'hoursWorked.html', {
-        'records': records,
-        'collaborators': collaborators,
-        'selected_collaborator_id': selected_collaborator_id,
-        'total_hours': total_hours,
-        'period': period
-    })
-    
+        
 @login_required
 def dashboard_view(request):
     if not request.user.is_staff and not request.user.isAdmin:
@@ -261,3 +213,85 @@ def dashboard_view(request):
         "total_attendance": total_attendance,
     }
     return render(request, "adminDashboard.html", context)
+@login_required
+def hoursWorked(request):
+    user = request.user
+    today = now().date()
+    period = request.GET.get('period', 'week')
+    
+    if period == 'week':
+        start_date = today - timedelta(days=today.weekday())
+        end_date = today
+    elif period == 'month':
+        start_date = today.replace(day=1)
+        end_date = today
+    elif period == 'custom':
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        
+        try:
+            start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+        except (TypeError, ValueError):
+            start_date = today
+            end_date = today
+    else:
+        start_date = today
+        end_date = today
+    
+    if user.is_staff or user.isAdmin:
+        collaborators = Collaborator.objects.all()
+        selected_collaborator_id = request.GET.get('collaborator', None)
+        if selected_collaborator_id:
+            records = AttendanceRecord.objects.filter(
+                collaborator_id=selected_collaborator_id,
+                inRecord__dateTime__date__gte=start_date,
+                inRecord__dateTime__date__lte=end_date
+            )
+        else:
+            records = AttendanceRecord.objects.none()
+    else:
+        collaborators = None
+        selected_collaborator_id = None
+        records = AttendanceRecord.objects.filter(
+            collaborator=user.collaborator,
+            inRecord__dateTime__date__gte=start_date,
+            inRecord__dateTime__date__lte=end_date
+        )
+    
+    records = records.annotate(
+        hours_worked=ExpressionWrapper(
+            F('outRecord__dateTime') - F('inRecord__dateTime'),
+            output_field=fields.DurationField()
+        )
+    )
+    total_hours = records.aggregate(Sum('hours_worked'))['hours_worked__sum']
+    if total_hours:
+        total_hours = str(total_hours).split(".")[0]
+        
+    for record in records:
+        stringDate="00:00:00"
+        duration=record.hours_worked
+        if duration:
+            total_seconds = int(duration.total_seconds())
+            hours, remainder = divmod(total_seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            stringDate=f"{hours:02}:{minutes:02}:{seconds:02}"
+        record.hours_worked = stringDate
+    
+    return render(request, 'hoursWorked.html', {
+        'records': records,
+        'collaborators': collaborators,
+        'selected_collaborator_id': selected_collaborator_id,
+        'total_hours': total_hours,
+        'period': period,
+        'start_date': start_date.strftime("%Y-%m-%d"),
+        'end_date': end_date.strftime("%Y-%m-%d")
+    })
+@login_required
+def attendanceChatView(request):
+    records = Record.objects.filter(
+        dateTime__date=now().date()
+    ).order_by("dateTime")
+    records = records[::-1]
+    return render(request, "attendance_chat.html", {"records": records})

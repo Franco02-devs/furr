@@ -16,7 +16,7 @@
                 <a href="{% url 'myRecords' %}" class="{% if request.path == '/personal/myRecords/' %}active{% endif %}">Mis Asistencias</a>
                 <a href="{% url 'hoursWorked' %}" class="{% if request.path == '/personal/hoursWorked/' %}active{% endif %}">Horas Trabajadas</a>
                 {% if user.isAdmin or user.is_staff %}
-                    <a href="{% url 'adminDashboard' %}" class="{% if request.path == '/personal/adminDashboard/' %}active{% endif %}">Administración</a>
+                    <a href="{% url 'adminDashboard' %}" class="{% if request.path == '/personal/adminDashboard/' %}active{% endif %}">Gestión</a>
                 {% endif %}
             </nav>
         </div>

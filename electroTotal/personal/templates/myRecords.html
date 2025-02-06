@@ -90,6 +90,7 @@
             <table>
                 <thead>
                     <tr>
+                        <th>Settings</th>
                         <th>Fecha</th>
                         <th>Entrada</th>
                         <th>Salida</th>
@@ -99,6 +100,12 @@
                 <tbody>
                     {% for record in records %}
                         <tr>
+                            <td>
+                                <a href="{% url 'attendanceRecord' attendanceRecord_id=record.id %}">
+                                    <i class="fa fa-cogs" aria-hidden="true"></i>
+                                </a>
+                            </td>
+                            
                             <td>{{ record.inRecord.dateTime|date:"d/m/Y" }}</td>
                             <td>
                                 <i class="fas fa-sign-in-alt icon in-time"></i>

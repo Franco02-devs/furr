@@ -175,7 +175,7 @@
                 {% for collaborator in collaborators %}
                     {% if collaborator.isWorking != -1 %}
                         <div class="usuario-activo">
-                            <p>🟢 {{ collaborator.user.username }} </p>
+                            <p>🟢 {{ collaborator.user.first_name }} </p>
                         </div>
                     {% endif %}
                 {% endfor %}

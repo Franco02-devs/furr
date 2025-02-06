@@ -14,6 +14,7 @@ urlpatterns = [
     path('attendanceRecord/<int:attendanceRecord_id>/', views.attendanceRecordDetailView, name='attendanceRecord'), #user
     path('myRecords/', views.myRecords, name='myRecords'), #user
     path('hoursWorked/', views.hoursWorked, name='hoursWorked'), #user
+    path('attendanceChat/', views.attendanceChatView, name='attendanceChat'), #user
     
     ### ADMIN DASHBOARD
     path('adminDashboard/', views.dashboard_view, name='adminDashboard'), #admin
