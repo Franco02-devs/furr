@@ -18,17 +18,27 @@ def generateUniqueUsername(base_username):
             
 def diferenciaFecha(fecha_inicio, fecha_fin):
     if fecha_inicio and fecha_fin:
-        # Calculamos la diferencia entre las fechas
         diferencia = fecha_fin - fecha_inicio
-        
-        # Extraemos las horas, minutos y segundos
         horas = diferencia.days * 24 + diferencia.seconds // 3600
         minutos = (diferencia.seconds % 3600) // 60
         segundos = diferencia.seconds % 60
-        
-        # Devuelves la diferencia en formato horas:minutos:segundos
         return f'{horas:02}:{minutos:02}:{segundos:02}'
     return None
+
+def corregirFecha(registro):
+    if registro.unTimelyDateTime:
+        registro.dateTime = registro.unTimelyDateTime
+        registro.unTimelyDateTime = None
+        registro.save()
+        return True
+    return False
+def eliminar(registro):
+    if registro:
+        registro.delete()
+        registro.save()
+        return True
+    return False
+
 
 
     

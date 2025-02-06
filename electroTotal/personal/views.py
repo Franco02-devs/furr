@@ -1,14 +1,13 @@
-from django.shortcuts import render, redirect,get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import CustomUserCreationForm, CollaboratorCreationForm, InputRecordForm, OutputRecordForm
 from .models import CustomUser, Collaborator, Record, AttendanceRecord
-from .scripts import generateUniqueUsername
+from .scripts import generateUniqueUsername, corregirFecha, eliminar
 from datetime import timedelta
 from django.db.models import Sum, F, ExpressionWrapper, fields
-from django.utils.timezone import now
 from datetime import datetime
 
 ## VIEWS
@@ -40,7 +39,7 @@ def homeView(request):
     if request.user.is_authenticated:
         collaborators=Collaborator.objects.all()
         return render(request, 'home.html',{"collaborators":collaborators})
-    return render(request, 'home.html')
+    return redirect('login')
 
 ###ADMIN
 
@@ -175,6 +174,16 @@ def attendanceRecordDetailView(request, attendanceRecord_id):
         'attendanceRecord': attendanceRecord,
         'worked_hours': worked_hours
     }
+    if (request.method == "POST" and "corregirEntrada" in request.POST) and (request.user.isAdmin or request.user.is_staff):
+        corregirFecha(registro=attendanceRecord.inRecord)
+        return render(request, 'attendanceRecord.html', context)
+    if (request.method == "POST" and "corregirSalida" in request.POST) and (request.user.isAdmin or request.user.is_staff):
+        corregirFecha(registro=attendanceRecord.outRecord)
+        return render(request, 'attendanceRecord.html', context)
+    if (request.method == "POST" and "corregirRegistro" in request.POST) and (request.user.isAdmin or request.user.is_staff):
+        eliminar(registro=attendanceRecord)
+        return redirect("")
+
     return render(request, 'attendanceRecord.html', context)
 
 @login_required
@@ -216,7 +225,8 @@ def dashboard_view(request):
 @login_required
 def hoursWorked(request):
     user = request.user
-    today = now().date()
+    today = datetime.now().date()
+    print(today)
     period = request.GET.get('period', 'week')
     
     if period == 'week':
@@ -291,7 +301,8 @@ def hoursWorked(request):
 @login_required
 def attendanceChatView(request):
     records = Record.objects.filter(
-        dateTime__date=now().date()
+        dateTime__date=datetime.now().date()
     ).order_by("dateTime")
     records = records[::-1]
-    return render(request, "attendance_chat.html", {"records": records})
+    return render(request, "attendanceChat.html", {"records": records})
+

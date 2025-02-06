@@ -1,4 +1,4 @@
-    {% extends 'baseHome.html' %}
+{% extends 'baseHome.html' %}
 {% block extra_styles2 %}
 <style>
     body {
@@ -102,13 +102,19 @@
                 {%endif%}
                 {% if attendanceRecord.inRecord.unTimelyDateTime %}
                     <p style="color: red;"><strong>Marcó fuera de tiempo:</strong> {{ attendanceRecord.inRecord.unTimelyDateTime }}</p>
-                    <div class="correction-box">
-                        <h3>Corrección Automática</h3>
-                        <p>El programa detectó un registro a destiempo y sugiere corrección automática.</p>
-                        <p><strong>Se corregirá la fecha, ahora la fecha de registro será la fecha diferida:</strong></p>
-                        <p><strong>Fecha anterior:</strong> {{ attendanceRecord.inRecord.dateTime|date:"d/m/Y h:i A" }}</p>
-                        <p><strong>Fecha corregida:</strong> {{ attendanceRecord.inRecord.unTimelyDateTime|date:"d/m/Y h:i A" }}</p>
-                    </div>
+                        <div class="correction-box">
+                            <h3>Corrección Automática</h3>
+                            <p>El programa detectó un registro a destiempo y sugiere corrección automática.</p>
+                            <p><strong>Se corregirá la fecha, ahora la fecha de registro será la fecha diferida:</strong></p>
+                            <p><strong>Fecha anterior:</strong> {{ attendanceRecord.inRecord.dateTime|date:"d/m/Y h:i A" }}</p>
+                            <p><strong>Fecha corregida:</strong> {{ attendanceRecord.inRecord.unTimelyDateTime|date:"d/m/Y h:i A" }}</p>
+                            {% if user.isAdmin or user.is_staff %}
+                            <form method="POST" id="form-correccion">
+                                {% csrf_token %}
+                                <button type="submit" name="corregirEntrada" class="btn" onclick="confirmarCorreccion()">Corrección Automática</button>
+                            </form>
+                            {% endif %}
+                        </div>   
                 {% endif %}
                 {% if attendanceRecord.inRecord.photo %}
                     <div class="photo">
@@ -136,6 +142,12 @@
                         <p><strong>Se corregirá la fecha, ahora la fecha de registro será la fecha diferida:</strong></p>
                         <p><strong>Fecha anterior:</strong> {{ attendanceRecord.outRecord.dateTime|date:"d/m/Y h:i A" }}</p>
                         <p><strong>Fecha corregida:</strong> {{ attendanceRecord.outRecord.unTimelyDateTime|date:"d/m/Y h:i A" }}</p>
+                        {% if user.isAdmin or user.is_staff %}
+                            <form method="POST" id="form-correccion">
+                                {% csrf_token %}
+                                <button type="submit" name="corregirSalida" class="btn" onclick="confirmarCorreccion()">Corrección Automática</button>
+                            </form>
+                        {% endif %}
                     </div>
                 {% endif %}
                 {% if attendanceRecord.outRecord.photo %}
@@ -161,6 +173,12 @@
                         <p>El programa detectó un registro a extraño, muy pocas o demasiadas horas de trabajo ({{ worked_hours|floatformat:2 }}), y sugiere corrección automática.</p>
                         <p><strong>Eliminación del registro</strong></p>
                     </div>
+                    {% if user.isAdmin or user.is_staff %}
+                        <form method="POST" id="form-correccion">
+                            {% csrf_token %}
+                            <button type="submit" name="corregirRegistro" class="btn" onclick="confirmarCorreccion()">Corrección Automática</button>
+                        </form>
+                    {% endif %}      
                 {% endif %}
             {% else %}
                 <p><strong>No disponible</strong></p>
@@ -170,4 +188,14 @@
 
         <a href="{% url 'home' %}" class="btn">Volver</a>
     </div>
+    <script>
+        function confirmarCorreccion() {
+          var confirmacion = confirm("¿Estás seguro de que deseas realizar la corrección automática?");
+          if (confirmacion) {
+            document.getElementById("form-correccion").submit();
+          } else {
+            return false;
+          }
+        }
+      </script>
 {% endblock %}

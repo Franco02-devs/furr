@@ -18,7 +18,7 @@
         border-radius: 10px;
         max-width: 90%;
         margin-bottom: 15px;
-        background-color:rgba(67, 255, 199, 0.47); /* Fondo suave */
+        background-color:rgba(67, 255, 199, 0.19); /* Fondo suave */
     }
 
     .chat-image {
@@ -53,7 +53,6 @@
         color: gray; /* Color más suave para la hora */
     }
 
-    /* Estilo para la etiqueta de ENTRADA/SALIDA */
     .chat-type {
         font-size: 14px;
         font-weight: bold;
@@ -70,7 +69,6 @@
         background-color: #F44336; /* Rojo para SALIDA */
     }
 
-    /* Estilo adicional para el mensaje de "sin registros" */
     .no-records {
         text-align: center;
         color: #ff6347;
@@ -80,13 +78,12 @@
     }
 
     h1 {
-        font-size: 24px;
-        font-weight: bold;
         text-align: center;
+        color: #333;
         margin-bottom: 20px;
     }
 
-    /* Estilo del modal (pantalla completa) */
+    /* Modal a pantalla completa */
     .modal {
         display: none; /* Inicialmente no visible */
         position: fixed;
@@ -94,29 +91,33 @@
         left: 0;
         top: 0;
         width: 100%;
-        height: auto;
+        height: 100%; /* Asegura que cubra toda la pantalla */
         background-color: rgba(0, 0, 0, 0.7); /* Fondo oscuro */
         justify-content: center;
         align-items: center;
-        cursor:pointer; 
+        cursor: pointer; /* Hace clickeable el modal para cerrarlo */
     }
 
     .modal-content {
-        max-width: 10%;
-        max-height: auto;
-        margin: auto;
+        max-width: 90%; /* Imagen ocupa el 90% del ancho */
+        max-height: 90vh; /* Imagen ocupa el 90% de la altura de la pantalla */
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .modal img {
-        width: 100%;
+        width: 35%; /* Asegura que la imagen ocupe todo el ancho */
         height: auto;
+        object-fit: contain; /* Mantiene la proporción de la imagen */
+        border-radius: 8px; /* Bordes redondeados */
     }
 </style>
 {% endblock %}
 
 {% block content_dashboard %}
 <div class="chat-container">
-    <h1>REGISTROS DE HOY</h1>
+    <h1>Registros de hoy</h1>
     {% for record in records %}
         <div class="chat-message">
             <!-- Imagen del colaborador -->
@@ -134,7 +135,6 @@
             </div>
         </div>
     {% empty %}
-        <!-- Mensaje si no hay registros -->
         <p class="no-records">No hay asistencias registradas hoy.</p>
     {% endfor %}
 </div>
@@ -151,12 +151,12 @@
         var modal = document.getElementById("imageModal");
         var modalImage = document.getElementById("modalImage");
         modalImage.src = imageUrl;
-        modal.style.display = "flex";
+        modal.style.display = "flex"; /* Muestra el modal */
     }
 
     function closeModal() {
         var modal = document.getElementById("imageModal");
-        modal.style.display = "none";
+        modal.style.display = "none"; /* Cierra el modal */
     }
 </script>
 

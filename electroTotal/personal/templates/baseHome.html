@@ -15,6 +15,7 @@
                 <a href="{% url 'home' %}" class="{% if request.path == '/personal/' %}active{% endif %}">Inicio</a>
                 <a href="{% url 'myRecords' %}" class="{% if request.path == '/personal/myRecords/' %}active{% endif %}">Mis Asistencias</a>
                 <a href="{% url 'hoursWorked' %}" class="{% if request.path == '/personal/hoursWorked/' %}active{% endif %}">Horas Trabajadas</a>
+                <a href="{% url 'attendanceChat' %}" class="{% if request.path == '/personal/attendanceChat/' %}active{% endif %}">Registros de hoy</a>
                 {% if user.isAdmin or user.is_staff %}
                     <a href="{% url 'adminDashboard' %}" class="{% if request.path == '/personal/adminDashboard/' %}active{% endif %}">Gestión</a>
                 {% endif %}
