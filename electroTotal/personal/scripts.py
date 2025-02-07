@@ -1,5 +1,6 @@
 # personal/scripts.py
 from .models import CustomUser, Record, Collaborator, AttendanceRecord
+from datetime import timedelta
 
 
 def getFirstWord(string):
@@ -38,7 +39,76 @@ def eliminar(registro):
         registro.save()
         return True
     return False
+############################################################################################
 
+def getAllCollaborators():
+    collaborators=Collaborator.objects.enables()
+    return collaborators
+def getAllUsers():
+    users=CustomUser.objects.enables()
+    return users
+def getAllAttendanceRecords():
+    records=AttendanceRecord.objects.enables()
+    return records
+def calculateHoursWorked(attendanceRecord):
+    try:
+        inRecordDT=attendanceRecord.inRecord.dateTime
+        outRecordDT=attendanceRecord.outRecord.dateTime
+        diff=outRecordDT-inRecordDT
+        diffHours=diff.total_seconds() / 3600
+        if inRecordDT.hour < 12 and diffHours > 5:
+            attendanceRecord.isLunch=True
+            attendanceRecord.save()
+            diffHours -= 1
+        else:
+            attendanceRecord.isLunch=False
+            attendanceRecord.save()           
+    except:
+        diffHours=0
+    return diffHours
+def getAllAttendanceRecordsT(collaborator):
+    records = AttendanceRecord.objects.filter(
+        collaborator=collaborator,
+        collaborator__isDelete=False
+    ).order_by('-inRecord__dateTime')
+    return records
+def getAllAttendanceRecordsTRange(collaborator,start,end):
+    records = AttendanceRecord.objects.filter(
+        collaborator=collaborator,
+        collaborator__isDelete=False,
+        inRecord__dateTime__date__gte=start,
+        inRecord__dateTime__date__lte=end,
+    ).order_by('-inRecord__dateTime')
+    return records
+def getAllHoursWorked(attendanceRecords):
+    allHours=[]
+    totalHours=0
+    for attendanceRecord in attendanceRecords:
+        hoursWorked=calculateHoursWorked(attendanceRecord)
+        allHours.append(hoursWorked)
+        totalHours=totalHours+hoursWorked
+    finalRecords=zip(attendanceRecords,allHours)
+    return totalHours,finalRecords
+
+def isObserved(attendance_record):
+    if attendance_record.inRecord.unTimelyDateTime or (attendance_record.outRecord and attendance_record.outRecord.unTimelyDateTime):
+        return True
+    
+    if attendance_record.outRecord:
+        time_diff = attendance_record.outRecord.dateTime - attendance_record.inRecord.dateTime
+        if time_diff < timedelta(hours=1) or time_diff > timedelta(hours=10):
+            return True
+    return False
+
+def float_to_hms(hours_float):
+    hours = int(hours_float)
+    minutes = int((hours_float - hours) * 60)
+    seconds = int((((hours_float - hours) * 60) - minutes) * 60)
+    return f"{hours}:{minutes:02d}:{seconds:02d}"
+
+
+    
+    
 
 
     

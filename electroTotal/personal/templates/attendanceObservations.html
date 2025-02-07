@@ -1,0 +1,87 @@
+{% extends 'baseHome.html' %}
+{% load custom_filters %}
+
+{% block extra_styles2 %}
+    <style>
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .in-time {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .out-time {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .late {
+            background-color: #ffeeba;
+            color: #856404;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+
+    </style>
+{% endblock %}
+
+
+{% block content_dashboard %}
+    <h1>Registros Observados</h1>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Colaborador</th>
+                    <th>Entrada</th>
+                    <th>Salida</th>
+                    <th>Duración</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record,hour in records %}
+                    <tr>
+                        <td>{{ record.collaborator.user.first_name }}</td>
+                        <td>{{ record.inRecord.dateTime|date:"d/m/Y" }}</td>
+                        <td>{{ record.outRecord.dateTime|date:"d/m/Y"|default:"-" }}</td>
+                        <td>
+                            {% if record.outRecord %}
+                                {{hour|float_to_hms}}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'attendanceRecord' attendanceRecord_id=record.id %}">
+                                <i class="fa fa-cogs" aria-hidden="true"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

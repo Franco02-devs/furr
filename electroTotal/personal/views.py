@@ -5,9 +5,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import CustomUserCreationForm, CollaboratorCreationForm, InputRecordForm, OutputRecordForm
 from .models import CustomUser, Collaborator, Record, AttendanceRecord
-from .scripts import generateUniqueUsername, corregirFecha, eliminar
+from .scripts import generateUniqueUsername, corregirFecha, eliminar, getAllCollaborators, getAllUsers,getAllAttendanceRecords, calculateHoursWorked, getAllAttendanceRecordsT,getAllAttendanceRecordsTRange,getAllHoursWorked,isObserved
 from datetime import timedelta
-from django.db.models import Sum, F, ExpressionWrapper, fields
 from datetime import datetime
 
 ## VIEWS
@@ -37,16 +36,26 @@ def logoutView(request):
 ### HOME
 def homeView(request):
     if request.user.is_authenticated:
-        collaborators=Collaborator.objects.all()
+        collaborators=getAllCollaborators()
         return render(request, 'home.html',{"collaborators":collaborators})
     return redirect('login')
 
 ###ADMIN
+@login_required
+def dashboardView(request):
+    if (not request.user.is_staff and not request.user.isAdmin):
+        return redirect('home')
 
-@user_passes_test(lambda u: u.is_superuser or (u.isAdmin))
-def dashboard_view(request):
-    return render(request, 'admin_dashboard.html')
+    totalUsers = getAllUsers().count()
+    totalCollaborators = getAllCollaborators().count()
+    totalAttendance = getAllAttendanceRecords().count()
 
+    context = {
+        "total_users": totalUsers,
+        "total_collaborators": totalCollaborators,
+        "total_attendance": totalAttendance,
+    }
+    return render(request, "adminDashboard.html", context)
 
 ### CREAR USUARIOS Y COLABORADORES
 @user_passes_test(lambda u: u.is_superuser)
@@ -166,8 +175,7 @@ def recordDetailView(request, record_id):
 def attendanceRecordDetailView(request, attendanceRecord_id):
     attendanceRecord = AttendanceRecord.objects.get(id=attendanceRecord_id)
     if attendanceRecord.outRecord:
-        time_diff = attendanceRecord.outRecord.dateTime - attendanceRecord.inRecord.dateTime
-        worked_hours = time_diff.total_seconds() / 3600 
+        worked_hours=calculateHoursWorked(attendanceRecord)
     else:
         worked_hours = None
     context = {
@@ -182,51 +190,38 @@ def attendanceRecordDetailView(request, attendanceRecord_id):
         return render(request, 'attendanceRecord.html', context)
     if (request.method == "POST" and "corregirRegistro" in request.POST) and (request.user.isAdmin or request.user.is_staff):
         eliminar(registro=attendanceRecord)
-        return redirect("")
+        return redirect('home')
 
     return render(request, 'attendanceRecord.html', context)
 
 @login_required
 def myRecords(request):
-    if request.user.is_staff or hasattr(request.user, 'isAdmin') and request.user.isAdmin:
-        collaborators = Collaborator.objects.all()
+    if request.user.is_staff or request.user.isAdmin:
+        collaborators = getAllCollaborators()
         selected_collaborator_id = request.GET.get('collaborator', None)
-
         if selected_collaborator_id:
-            records = AttendanceRecord.objects.filter(collaborator_id=selected_collaborator_id).order_by('-inRecord__dateTime')
+            collaboratorS=Collaborator.objects.enables().get(id=selected_collaborator_id)
+            records = getAllAttendanceRecordsT(collaboratorS).order_by('-inRecord__dateTime')
         else:
             records = AttendanceRecord.objects.none()
     else:
         collaborators = None
-        records = AttendanceRecord.objects.filter(collaborator=request.user.collaborator).order_by('-inRecord__dateTime')
+        records = getAllAttendanceRecordsT(collaborator=request.user.collaborator).order_by('-inRecord__dateTime')
+        getAllHoursWorked(records)
         selected_collaborator_id=None
+    totalHours,finalRecords=getAllHoursWorked(records)
 
     return render(request, 'myRecords.html', {
-        'records': records,
+        'totalHours':totalHours,
+        'records': finalRecords,
         'collaborators': collaborators,
         'selected_collaborator_id': selected_collaborator_id
     })
-        
-@login_required
-def dashboard_view(request):
-    if not request.user.is_staff and not request.user.isAdmin:
-        return redirect('home')
-
-    total_users = CustomUser.objects.filter(isDelete=False).count()
-    total_collaborators = Collaborator.objects.filter(isDelete=False).count()
-    total_attendance = AttendanceRecord.objects.count()
-
-    context = {
-        "total_users": total_users,
-        "total_collaborators": total_collaborators,
-        "total_attendance": total_attendance,
-    }
-    return render(request, "adminDashboard.html", context)
+    
 @login_required
 def hoursWorked(request):
     user = request.user
     today = datetime.now().date()
-    print(today)
     period = request.GET.get('period', 'week')
     
     if period == 'week':
@@ -238,7 +233,6 @@ def hoursWorked(request):
     elif period == 'custom':
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
-        
         try:
             start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
             end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
@@ -250,45 +244,19 @@ def hoursWorked(request):
         end_date = today
     
     if user.is_staff or user.isAdmin:
-        collaborators = Collaborator.objects.all()
+        collaborators = getAllCollaborators()
         selected_collaborator_id = request.GET.get('collaborator', None)
         if selected_collaborator_id:
-            records = AttendanceRecord.objects.filter(
-                collaborator_id=selected_collaborator_id,
-                inRecord__dateTime__date__gte=start_date,
-                inRecord__dateTime__date__lte=end_date
-            )
+            collaboratorS=Collaborator.objects.enables().get(id=selected_collaborator_id)
+            records=getAllAttendanceRecordsTRange(collaboratorS,start_date,end_date)
         else:
             records = AttendanceRecord.objects.none()
     else:
         collaborators = None
         selected_collaborator_id = None
-        records = AttendanceRecord.objects.filter(
-            collaborator=user.collaborator,
-            inRecord__dateTime__date__gte=start_date,
-            inRecord__dateTime__date__lte=end_date
-        )
-    
-    records = records.annotate(
-        hours_worked=ExpressionWrapper(
-            F('outRecord__dateTime') - F('inRecord__dateTime'),
-            output_field=fields.DurationField()
-        )
-    )
-    total_hours = records.aggregate(Sum('hours_worked'))['hours_worked__sum']
-    if total_hours:
-        total_hours = str(total_hours).split(".")[0]
-        
-    for record in records:
-        stringDate="00:00:00"
-        duration=record.hours_worked
-        if duration:
-            total_seconds = int(duration.total_seconds())
-            hours, remainder = divmod(total_seconds, 3600)
-            minutes, seconds = divmod(remainder, 60)
-            stringDate=f"{hours:02}:{minutes:02}:{seconds:02}"
-        record.hours_worked = stringDate
-    
+        records=getAllAttendanceRecordsTRange(user.collaborator,start_date,end_date)
+
+    total_hours,records=getAllHoursWorked(records)
     return render(request, 'hoursWorked.html', {
         'records': records,
         'collaborators': collaborators,
@@ -298,7 +266,8 @@ def hoursWorked(request):
         'start_date': start_date.strftime("%Y-%m-%d"),
         'end_date': end_date.strftime("%Y-%m-%d")
     })
-@login_required
+    
+@user_passes_test(lambda u: u.is_superuser or u.isAdmin)
 def attendanceChatView(request):
     records = Record.objects.filter(
         dateTime__date=datetime.now().date()
@@ -306,3 +275,8 @@ def attendanceChatView(request):
     records = records[::-1]
     return render(request, "attendanceChat.html", {"records": records})
 
+@user_passes_test(lambda u: u.is_superuser or u.isAdmin)
+def attendanceObservationsView(request):
+    observed_records = [record for record in AttendanceRecord.objects.enables() if isObserved(record)]
+    total,observed_records=getAllHoursWorked(observed_records)
+    return render(request, 'attendanceObservations.html', {'records': observed_records})

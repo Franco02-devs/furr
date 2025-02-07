@@ -176,7 +176,7 @@
                     {% if user.isAdmin or user.is_staff %}
                         <form method="POST" id="form-correccion">
                             {% csrf_token %}
-                            <button type="submit" name="corregirRegistro" class="btn" onclick="confirmarCorreccion()">Corrección Automática</button>
+                            <button type="submit" name="corregirRegistro" class="btn" onclick="confirmarCorreccion(event)">Corrección Automática</button>
                         </form>
                     {% endif %}      
                 {% endif %}
@@ -189,13 +189,12 @@
         <a href="{% url 'home' %}" class="btn">Volver</a>
     </div>
     <script>
-        function confirmarCorreccion() {
-          var confirmacion = confirm("¿Estás seguro de que deseas realizar la corrección automática?");
-          if (confirmacion) {
-            document.getElementById("form-correccion").submit();
-          } else {
-            return false;
-          }
+        function confirmarCorreccion(event) {
+            var confirmacion = confirm("¿Estás seguro de que deseas realizar la corrección automática?");
+            if (!confirmacion) {
+                event.preventDefault();
+                return false;
+            }
         }
       </script>
 {% endblock %}
