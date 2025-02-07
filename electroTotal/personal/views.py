@@ -190,7 +190,7 @@ def attendanceRecordDetailView(request, attendanceRecord_id):
         return render(request, 'attendanceRecord.html', context)
     if (request.method == "POST" and "corregirRegistro" in request.POST) and (request.user.isAdmin or request.user.is_staff):
         eliminar(registro=attendanceRecord)
-        return redirect('home')
+        return redirect('adminDashboard')
 
     return render(request, 'attendanceRecord.html', context)
 
@@ -277,6 +277,17 @@ def attendanceChatView(request):
 
 @user_passes_test(lambda u: u.is_superuser or u.isAdmin)
 def attendanceObservationsView(request):
-    observed_records = [record for record in AttendanceRecord.objects.enables() if isObserved(record)]
-    total,observed_records=getAllHoursWorked(observed_records)
-    return render(request, 'attendanceObservations.html', {'records': observed_records})
+    observed_recordsUnTimely = [record for record in AttendanceRecord.objects.enables() if isObserved(record) == 0]
+    observedRecordsShort = [record for record in AttendanceRecord.objects.enables() if isObserved(record) == 1]
+    observedRecordsLarge = [record for record in AttendanceRecord.objects.enables() if isObserved(record) == 2]
+
+    total, observed_recordsUnTimely = getAllHoursWorked(observed_recordsUnTimely)
+    total, observedRecordsShort = getAllHoursWorked(observedRecordsShort)
+    total, observedRecordsLarge = getAllHoursWorked(observedRecordsLarge)
+
+    return render(request, 'attendanceObservations.html', {
+        'records_unTimely': observed_recordsUnTimely,
+        'records_short': observedRecordsShort,
+        'records_large': observedRecordsLarge
+    })
+

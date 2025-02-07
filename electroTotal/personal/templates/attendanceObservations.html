@@ -28,28 +28,41 @@
         tr:nth-child(even) {
             background-color: #f2f2f2;
         }
-        .in-time {
-            color: #28a745;
-            font-weight: bold;
-        }
-        .out-time {
-            color: #dc3545;
-            font-weight: bold;
-        }
         .late {
             background-color: #ffeeba;
             color: #856404;
             padding: 5px;
             border-radius: 5px;
         }
-
-
+        /* Colores de filas */
+        .row-warning {
+            background-color: rgb(255, 223, 107) !important; /* Amarillo - Destiempo */
+        }
+        .row-info {
+            background-color: rgb(173, 216, 230) !important; /* Azul - Tiempo corto */
+        }
+        .row-danger {
+            background-color: rgb(255, 153, 153) !important; /* Rojo - Tiempo largo */
+        }
     </style>
 {% endblock %}
 
-
 {% block content_dashboard %}
     <h1>Registros Observados</h1>
+    <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center;">
+            <div style="width: 20px; height: 20px; background-color: rgb(255, 223, 107); border: 1px solid #ccc; margin-right: 5px;"></div>
+            <span>Destiempo en la entrada o salida</span>
+        </div>
+        <div style="display: flex; align-items: center;">
+            <div style="width: 20px; height: 20px; background-color: rgb(173, 216, 230); border: 1px solid #ccc; margin-right: 5px;"></div>
+            <span>Duración menor a 2 horas</span>
+        </div>
+        <div style="display: flex; align-items: center;">
+            <div style="width: 20px; height: 20px; background-color: rgb(255, 153, 153); border: 1px solid #ccc; margin-right: 5px;"></div>
+            <span>Duración mayor a 10 horas</span>
+        </div>
+    </div>
     <div class="table-wrapper">
         <table>
             <thead>
@@ -62,18 +75,49 @@
                 </tr>
             </thead>
             <tbody>
-                {% for record,hour in records %}
-                    <tr>
+                <!-- Registros con entrada/salida a destiempo (amarillo) -->
+                {% for record, hour in records_unTimely %}
+                    <tr class="row-warning">
                         <td>{{ record.collaborator.user.first_name }}</td>
                         <td>{{ record.inRecord.dateTime|date:"d/m/Y" }}</td>
                         <td>{{ record.outRecord.dateTime|date:"d/m/Y"|default:"-" }}</td>
                         <td>
                             {% if record.outRecord %}
-                                {{hour|float_to_hms}}
+                                {{ hour|float_to_hms }}
                             {% else %}
                                 -
                             {% endif %}
                         </td>
+                        <td>
+                            <a href="{% url 'attendanceRecord' attendanceRecord_id=record.id %}">
+                                <i class="fa fa-cogs" aria-hidden="true"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+
+                <!-- Registros con duración menor a 2 horas (azul) -->
+                {% for record, hour in records_short %}
+                    <tr class="row-info">
+                        <td>{{ record.collaborator.user.first_name }}</td>
+                        <td>{{ record.inRecord.dateTime|date:"d/m/Y" }}</td>
+                        <td>{{ record.outRecord.dateTime|date:"d/m/Y"|default:"-" }}</td>
+                        <td>{{ hour|float_to_hms }}</td>
+                        <td>
+                            <a href="{% url 'attendanceRecord' attendanceRecord_id=record.id %}">
+                                <i class="fa fa-cogs" aria-hidden="true"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+
+                <!-- Registros con duración mayor a 10 horas (rojo) -->
+                {% for record, hour in records_large %}
+                    <tr class="row-danger">
+                        <td>{{ record.collaborator.user.first_name }}</td>
+                        <td>{{ record.inRecord.dateTime|date:"d/m/Y" }}</td>
+                        <td>{{ record.outRecord.dateTime|date:"d/m/Y"|default:"-" }}</td>
+                        <td>{{ hour|float_to_hms }}</td>
                         <td>
                             <a href="{% url 'attendanceRecord' attendanceRecord_id=record.id %}">
                                 <i class="fa fa-cogs" aria-hidden="true"></i>

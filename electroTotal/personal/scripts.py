@@ -35,7 +35,7 @@ def corregirFecha(registro):
     return False
 def eliminar(registro):
     if registro:
-        registro.delete()
+        registro.isDelete=True
         registro.save()
         return True
     return False
@@ -68,12 +68,14 @@ def calculateHoursWorked(attendanceRecord):
     return diffHours
 def getAllAttendanceRecordsT(collaborator):
     records = AttendanceRecord.objects.filter(
+        isDelete=False,
         collaborator=collaborator,
         collaborator__isDelete=False
     ).order_by('-inRecord__dateTime')
     return records
 def getAllAttendanceRecordsTRange(collaborator,start,end):
     records = AttendanceRecord.objects.filter(
+        isDelete=False,
         collaborator=collaborator,
         collaborator__isDelete=False,
         inRecord__dateTime__date__gte=start,
@@ -92,13 +94,15 @@ def getAllHoursWorked(attendanceRecords):
 
 def isObserved(attendance_record):
     if attendance_record.inRecord.unTimelyDateTime or (attendance_record.outRecord and attendance_record.outRecord.unTimelyDateTime):
-        return True
-    
+        return 0
     if attendance_record.outRecord:
-        time_diff = attendance_record.outRecord.dateTime - attendance_record.inRecord.dateTime
-        if time_diff < timedelta(hours=1) or time_diff > timedelta(hours=10):
-            return True
-    return False
+        time_diff = calculateHoursWorked(attendance_record)
+        if time_diff < 1:
+            return 1
+        elif time_diff>10:
+            return 2
+    return -1
+
 
 def float_to_hms(hours_float):
     hours = int(hours_float)

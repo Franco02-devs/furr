@@ -82,6 +82,19 @@
     .btn:hover {
         background: #0056b3;
     }
+    .btn2 {
+        display: block;
+        text-align: center;
+        background:rgb(255, 123, 0);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        text-decoration: none;
+        margin-top: 20px;
+    }
+    .btn2:hover {
+        background:rgb(179, 0, 0);
+    }
 </style>
 {% endblock %}
 
@@ -111,7 +124,7 @@
                             {% if user.isAdmin or user.is_staff %}
                             <form method="POST" id="form-correccion">
                                 {% csrf_token %}
-                                <button type="submit" name="corregirEntrada" class="btn" onclick="confirmarCorreccion()">Corrección Automática</button>
+                                <button type="submit" name="corregirEntrada" class="btn2" onclick="confirmarCorreccion()">Corrección Automática</button>
                             </form>
                             {% endif %}
                         </div>   
@@ -145,7 +158,7 @@
                         {% if user.isAdmin or user.is_staff %}
                             <form method="POST" id="form-correccion">
                                 {% csrf_token %}
-                                <button type="submit" name="corregirSalida" class="btn" onclick="confirmarCorreccion()">Corrección Automática</button>
+                                <button type="submit" name="corregirSalida" class="btn2" onclick="confirmarCorreccion()">Corrección Automática</button>
                             </form>
                         {% endif %}
                     </div>
@@ -171,12 +184,12 @@
                     <div class="correction-box">
                         <h3>Detección de registro extraño</h3>
                         <p>El programa detectó un registro a extraño, muy pocas o demasiadas horas de trabajo ({{ worked_hours|floatformat:2 }}), y sugiere corrección automática.</p>
-                        <p><strong>Eliminación del registro</strong></p>
+                        <p><strong>ACCIÓN RECOMENDADA: Eliminación del registro</strong></p>
                     </div>
                     {% if user.isAdmin or user.is_staff %}
                         <form method="POST" id="form-correccion">
                             {% csrf_token %}
-                            <button type="submit" name="corregirRegistro" class="btn" onclick="confirmarCorreccion(event)">Corrección Automática</button>
+                            <button type="submit" name="corregirRegistro" class="btn2" onclick="confirmarCorreccion(event)">Corrección Automática</button>
                         </form>
                     {% endif %}      
                 {% endif %}
@@ -186,7 +199,11 @@
 
         </div>
 
-        <a href="{% url 'home' %}" class="btn">Volver</a>
+        <a href="{% url 'home' %}" class="btn">Home</a>
+        {% if user.isAdmin or user.is_staff %}
+            <a href="{% url 'observedList' %}" class="btn">Volver a observaciones</a>
+        {% endif %}   
+        
     </div>
     <script>
         function confirmarCorreccion(event) {
