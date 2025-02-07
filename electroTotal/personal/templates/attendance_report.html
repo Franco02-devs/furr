@@ -1,0 +1,65 @@
+{% extends "baseHome.html" %}
+
+{% block content_dashboard %}
+<style>
+.custom-select {
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    transition: border-color 0.3s ease;
+}
+
+.custom-select:focus {
+    border-color: #007bff;
+    box-shadow: none;
+}
+
+.btn-outline-dark {
+    transition: all 0.3s ease;
+}
+
+.btn-outline-dark:hover {
+    background-color: #343a40;
+    color: #fff;
+}
+</style>
+<div class="container mt-5">
+    <div class="card shadow-sm p-4 rounded-lg border-0">
+        <h1 class="text-center text-dark mb-4 font-weight-light">📊 Generar Reporte de Asistencia</h1>
+
+        <form method="GET" action="{% url 'excel' %}">
+            <div class="form-group mb-4">
+                <label for="mes" class="font-weight-medium text-secondary">📅 Selecciona el mes:</label>
+                <select name="mes" id="mes" class="form-control custom-select" required>
+                    <option value="1">Enero</option>
+                    <option value="2">Febrero</option>
+                    <option value="3">Marzo</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Mayo</option>
+                    <option value="6">Junio</option>
+                    <option value="7">Julio</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                </select>
+            </div>
+
+            <div class="form-group mb-4">
+                <label for="anio" class="font-weight-medium text-secondary">📆 Selecciona el año:</label>
+                <select name="anio" id="anio" class="form-control custom-select" required>
+                    {% for year in years %}
+                        <option value="{{ year }}">{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-outline-dark btn-lg shadow-none border-2 rounded-pill px-5">
+                    <i class="fas fa-download mr-2"></i> Descargar Reporte
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -14,6 +14,8 @@ urlpatterns = [
     path('createCollaborator/', views.createCollaboratorview, name='createCollaborator'), #admin OK
     path('collaborator/<int:collaborator_id>/', views.collaboratorDetailView, name='collaborator'), # OK
     path('adminDashboard/observedList/', views.attendanceObservationsView, name='observedList'), #
+    path('reporteAsistencia/', views.reporte_asistencia_template, name='reporte'),
+    path('excel/',views.generar_reporte_asistencia,name="excel"),
     ## APPLICATION ASISTENCIA
     path('registerInput/', views.registerInputView, name='registerInput'), #user OK
     path('record/<int:record_id>/', views.recordDetailView, name='record'), #user OK

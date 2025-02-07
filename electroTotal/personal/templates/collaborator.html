@@ -48,10 +48,7 @@
     <div class="collaborator-details">
         <h1>Colaborador</h1>
         <p><strong>Usuario:</strong> {{ collaborator.user.username }}</p>
-        <p><strong>Nombre:</strong> {{ collaborator.user.first_name }}</p>
-        <p><strong>Rol Preferido:</strong> {{ collaborator.favoritePlaceIsOffice }}</p>
-        <p><strong>¿Esta activo?:</strong> {{ collaborator.isWorking }}</p>
-        
+        <p><strong>Nombre:</strong> {{ collaborator.user.first_name }}</p>        
         <a href="{% url 'createCollaborator' %}" class="btn-submit">
             Inscribir a otro colaborador
         </a>

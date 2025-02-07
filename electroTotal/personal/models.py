@@ -3,13 +3,13 @@ from django.db import models
 from django.utils import timezone
 
 class ModelManager(models.Manager):
+   
     def enables(self):
         return self.filter(isDelete=False)
 
 class CustomUser(AbstractUser):
     isDelete= models.BooleanField(default=False)
     isAdmin = models.BooleanField(default=False)
-    objects=ModelManager()
     
 class Collaborator(models.Model):
     isDelete= models.BooleanField(default=False)    

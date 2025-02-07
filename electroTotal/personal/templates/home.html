@@ -173,11 +173,9 @@
             <h3>Colaboradores Activos</h3>
             <div class="usuarios-lista">
                 {% for collaborator in collaborators %}
-                    {% if collaborator.isWorking != -1 %}
-                        <div class="usuario-activo">
-                            <p>🟢 {{ collaborator.user.first_name }} </p>
-                        </div>
-                    {% endif %}
+                    <div class="usuario-activo">
+                        <p>🟢 {{ collaborator.user.first_name }} </p>
+                    </div>
                 {% endfor %}
             </div>
         </div>
@@ -185,11 +183,7 @@
 
     <div class="section-title">Información General</div>
     <div class="cards">
-        <div class="card">
-            <h3>Mis Asistencias</h3>
-            <p>Ver todas mis asistencias registradas.</p>
-            <a href="{% url 'myRecords' %}" class="btn-primary">Ver Asistencias</a>
-        </div>
+
 
         <div class="card">
             <h3>Horas Trabajadas</h3>
@@ -198,9 +192,14 @@
         </div>
 
         <div class="card">
-            <h3>Registrar Asistencia</h3>
-            <p>Registrar mi asistencia de hoy.</p>
+            <h3>Registrar Entrada</h3>
+            <p>Registrar mi entrada de hoy. (NO RECOMENDADA)</p>
             <a href="{% url 'registerInput' %}" class="btn-primary">Registrar</a>
+        </div>
+        <div class="card">
+            <h3>Registrar Salida</h3>
+            <p>Registrar mi salida de hoy. (NO RECOMENDADA)</p>
+            <a href="{% url 'registerOutput' %}" class="btn-primary">Registrar</a>
         </div>
     </div>
 {% endblock %}

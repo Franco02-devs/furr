@@ -1,7 +1,6 @@
 # personal/scripts.py
 from .models import CustomUser, Record, Collaborator, AttendanceRecord
-from datetime import timedelta
-
+import pytz
 
 def getFirstWord(string):
     space=string.find(" ")
@@ -33,13 +32,20 @@ def corregirFecha(registro):
         registro.save()
         return True
     return False
+
 def eliminar(registro):
     if registro:
         registro.isDelete=True
         registro.save()
         return True
     return False
+
 ############################################################################################
+############################################################################################
+## GETTERS ##
+def getCollaboratorsActive():
+    collaboratorsActive = Collaborator.objects.enables().exclude(isWorking=-1)
+    return collaboratorsActive
 
 def getAllCollaborators():
     collaborators=Collaborator.objects.enables()
@@ -50,29 +56,39 @@ def getAllUsers():
 def getAllAttendanceRecords():
     records=AttendanceRecord.objects.enables()
     return records
+
 def calculateHoursWorked(attendanceRecord):
     try:
         inRecordDT=attendanceRecord.inRecord.dateTime
         outRecordDT=attendanceRecord.outRecord.dateTime
         diff=outRecordDT-inRecordDT
         diffHours=diff.total_seconds() / 3600
-        if inRecordDT.hour < 12 and diffHours > 5:
-            attendanceRecord.isLunch=True
-            attendanceRecord.save()
+        launch=isLaunch(inRecordDT,diffHours)
+        if launch:
             diffHours -= 1
-        else:
-            attendanceRecord.isLunch=False
-            attendanceRecord.save()           
     except:
         diffHours=0
-    return diffHours
-def getAllAttendanceRecordsT(collaborator):
+        launch=False
+    return diffHours,launch
+
+def isLaunch(inRecordDT, diffHours):
+    peru_tz = pytz.timezone("America/Lima")
+    inRecordDT = inRecordDT.astimezone(peru_tz)
+
+    return inRecordDT.hour < 12 and diffHours > 5
+
+
+def getAllAttendanceRecordsT(collaborator, limit=None):
     records = AttendanceRecord.objects.filter(
         isDelete=False,
         collaborator=collaborator,
         collaborator__isDelete=False
     ).order_by('-inRecord__dateTime')
+    
+    if limit is not None:
+        records = records[:limit]
     return records
+
 def getAllAttendanceRecordsTRange(collaborator,start,end):
     records = AttendanceRecord.objects.filter(
         isDelete=False,
@@ -86,7 +102,7 @@ def getAllHoursWorked(attendanceRecords):
     allHours=[]
     totalHours=0
     for attendanceRecord in attendanceRecords:
-        hoursWorked=calculateHoursWorked(attendanceRecord)
+        hoursWorked, _ =calculateHoursWorked(attendanceRecord)
         allHours.append(hoursWorked)
         totalHours=totalHours+hoursWorked
     finalRecords=zip(attendanceRecords,allHours)
@@ -96,7 +112,7 @@ def isObserved(attendance_record):
     if attendance_record.inRecord.unTimelyDateTime or (attendance_record.outRecord and attendance_record.outRecord.unTimelyDateTime):
         return 0
     if attendance_record.outRecord:
-        time_diff = calculateHoursWorked(attendance_record)
+        time_diff, _ = calculateHoursWorked(attendance_record)
         if time_diff < 1:
             return 1
         elif time_diff>10:

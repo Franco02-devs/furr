@@ -21,6 +21,7 @@ class CustomUserCreationForm(forms.ModelForm):
         
         self.fields['isAdmin'].label = '¿Es administrador?:'
         self.fields['first_name'].label = 'Nombre del colaborador:'
+        self.fields['favoritePlaceIsOffice'].required=False
 
 
     def clean_password2(self):

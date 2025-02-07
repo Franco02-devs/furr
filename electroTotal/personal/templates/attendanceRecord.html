@@ -124,7 +124,7 @@
                             {% if user.isAdmin or user.is_staff %}
                             <form method="POST" id="form-correccion">
                                 {% csrf_token %}
-                                <button type="submit" name="corregirEntrada" class="btn2" onclick="confirmarCorreccion()">Corrección Automática</button>
+                                <button type="submit" name="corregirEntrada" class="btn2" onclick="confirmarCorreccion(event)">Corrección Automática</button>
                             </form>
                             {% endif %}
                         </div>   
@@ -158,7 +158,7 @@
                         {% if user.isAdmin or user.is_staff %}
                             <form method="POST" id="form-correccion">
                                 {% csrf_token %}
-                                <button type="submit" name="corregirSalida" class="btn2" onclick="confirmarCorreccion()">Corrección Automática</button>
+                                <button type="submit" name="corregirSalida" class="btn2" onclick="confirmarCorreccion(event)">Corrección Automática</button>
                             </form>
                         {% endif %}
                     </div>

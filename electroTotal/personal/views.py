@@ -5,9 +5,27 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import CustomUserCreationForm, CollaboratorCreationForm, InputRecordForm, OutputRecordForm
 from .models import CustomUser, Collaborator, Record, AttendanceRecord
-from .scripts import generateUniqueUsername, corregirFecha, eliminar, getAllCollaborators, getAllUsers,getAllAttendanceRecords, calculateHoursWorked, getAllAttendanceRecordsT,getAllAttendanceRecordsTRange,getAllHoursWorked,isObserved
+from .scripts import (
+    getCollaboratorsActive,
+    generateUniqueUsername,
+    corregirFecha,
+    eliminar,
+    getAllCollaborators,
+    calculateHoursWorked,
+    getAllAttendanceRecordsT,
+    getAllAttendanceRecordsTRange,
+    getAllHoursWorked,
+    isObserved,
+    float_to_hms
+)
 from datetime import timedelta
 from datetime import datetime
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment
+from openpyxl.utils import get_column_letter
+from django.http import HttpResponse
+from django.utils.timezone import localtime
+import pytz
 
 ## VIEWS
 ### LOGIN
@@ -24,7 +42,7 @@ def loginView(request):
             else:
                 messages.error(request, 'Nombre de usuario o contraseña incorrectos')
     else:
-        form = AuthenticationForm()
+        form = AuthenticationForm() 
 
     return render(request, 'login.html', {'form': form})
 
@@ -36,9 +54,10 @@ def logoutView(request):
 ### HOME
 def homeView(request):
     if request.user.is_authenticated:
-        collaborators=getAllCollaborators()
+        collaborators=getCollaboratorsActive()
         return render(request, 'home.html',{"collaborators":collaborators})
     return redirect('login')
+
 
 ###ADMIN
 @login_required
@@ -46,14 +65,14 @@ def dashboardView(request):
     if (not request.user.is_staff and not request.user.isAdmin):
         return redirect('home')
 
-    totalUsers = getAllUsers().count()
-    totalCollaborators = getAllCollaborators().count()
-    totalAttendance = getAllAttendanceRecords().count()
+    totalUsers = CustomUser.objects.count()
+    totalCollaborators = Collaborator.objects.enables().count()
+    totalAttendance = AttendanceRecord.objects.enables().count()
 
     context = {
         "total_users": totalUsers,
         "total_collaborators": totalCollaborators,
-        "total_attendance": totalAttendance,
+        "total_attendance": totalAttendance,    
     }
     return render(request, "adminDashboard.html", context)
 
@@ -76,10 +95,10 @@ def createUserView(request):
         form = CustomUserCreationForm()
 
     return render(request, 'createUser.html', {'form': form})
-
+ 
 @user_passes_test(lambda u: u.is_superuser)
 def userDetailView(request, user_id):
-    user = CustomUser.objects.get(id=user_id)
+    user = CustomUser.objects.only('username', 'first_name', 'isAdmin', 'date_joined').get(id=user_id)
     return render(request, 'user.html', {'user': user})
 
 @user_passes_test(lambda u: u.is_superuser or (u.isAdmin))
@@ -100,7 +119,6 @@ def createCollaboratorview(request):
             user.save()
             collaborator.user = user
             collaborator.save()
-            messages.success(request, "Colaborador inscrito exitosamente.")
             return redirect('collaborator', collaborator_id=collaborator.id)
     else:
         form = CollaboratorCreationForm()
@@ -109,7 +127,7 @@ def createCollaboratorview(request):
 
 @user_passes_test(lambda u: u.is_superuser or (u.isAdmin))
 def collaboratorDetailView(request, collaborator_id):
-    collaborator = Collaborator.objects.get(id=collaborator_id)
+    collaborator = Collaborator.objects.only('user__username', 'user__first_name', 'favoritePlaceIsOffice', 'isWorking').get(id=collaborator_id)
     return render(request, 'collaborator.html', {'collaborator': collaborator})
 
 @login_required
@@ -175,7 +193,7 @@ def recordDetailView(request, record_id):
 def attendanceRecordDetailView(request, attendanceRecord_id):
     attendanceRecord = AttendanceRecord.objects.get(id=attendanceRecord_id)
     if attendanceRecord.outRecord:
-        worked_hours=calculateHoursWorked(attendanceRecord)
+        worked_hours, _ =calculateHoursWorked(attendanceRecord)
     else:
         worked_hours = None
     context = {
@@ -201,12 +219,12 @@ def myRecords(request):
         selected_collaborator_id = request.GET.get('collaborator', None)
         if selected_collaborator_id:
             collaboratorS=Collaborator.objects.enables().get(id=selected_collaborator_id)
-            records = getAllAttendanceRecordsT(collaboratorS).order_by('-inRecord__dateTime')
+            records = getAllAttendanceRecordsT(collaboratorS,limit=10)
         else:
             records = AttendanceRecord.objects.none()
     else:
         collaborators = None
-        records = getAllAttendanceRecordsT(collaborator=request.user.collaborator).order_by('-inRecord__dateTime')
+        records = getAllAttendanceRecordsT(collaborator=request.user.collaborator,limit=5)
         getAllHoursWorked(records)
         selected_collaborator_id=None
     totalHours,finalRecords=getAllHoursWorked(records)
@@ -275,19 +293,110 @@ def attendanceChatView(request):
     records = records[::-1]
     return render(request, "attendanceChat.html", {"records": records})
 
-@user_passes_test(lambda u: u.is_superuser or u.isAdmin)
 def attendanceObservationsView(request):
-    observed_recordsUnTimely = [record for record in AttendanceRecord.objects.enables() if isObserved(record) == 0]
-    observedRecordsShort = [record for record in AttendanceRecord.objects.enables() if isObserved(record) == 1]
-    observedRecordsLarge = [record for record in AttendanceRecord.objects.enables() if isObserved(record) == 2]
+    attendance_records = AttendanceRecord.objects.enables()
 
-    total, observed_recordsUnTimely = getAllHoursWorked(observed_recordsUnTimely)
-    total, observedRecordsShort = getAllHoursWorked(observedRecordsShort)
-    total, observedRecordsLarge = getAllHoursWorked(observedRecordsLarge)
+    observed_recordsUnTimely = []
+    observedRecordsShort = []
+    observedRecordsLarge = []
+    totalUnTimely, totalShort, totalLarge = 0, 0, 0
+
+    for record in attendance_records:
+        observed_status = isObserved(record)
+        hoursWorked, _  = calculateHoursWorked(record)
+        
+        if observed_status == 0:
+            observed_recordsUnTimely.append((record, hoursWorked))
+            totalUnTimely += hoursWorked
+        elif observed_status == 1:
+            observedRecordsShort.append((record, hoursWorked))
+            totalShort += hoursWorked
+        elif observed_status == 2:
+            observedRecordsLarge.append((record, hoursWorked))
+            totalLarge += hoursWorked
 
     return render(request, 'attendanceObservations.html', {
         'records_unTimely': observed_recordsUnTimely,
         'records_short': observedRecordsShort,
-        'records_large': observedRecordsLarge
+        'records_large': observedRecordsLarge,
+        'total_unTimely': totalUnTimely,
+        'total_short': totalShort,
+        'total_large': totalLarge,
     })
+def reporte_asistencia_template(request):
+    current_year = datetime.now().year
+    years = list(range(2024, current_year + 1))
+    return render(request, "attendance_report.html", {"years": years})
 
+def generar_reporte_asistencia(request):
+    mes = request.GET.get("mes")
+    anio = request.GET.get("anio")
+
+    if not mes or not anio:
+        return HttpResponse("Debes seleccionar un mes y un año.", status=400)
+
+    mes = int(mes)
+    anio = int(anio)
+
+    wb = Workbook()
+    wb.remove(wb.active)
+    colaboradores = Collaborator.objects.enables()
+    encabezados = ['Fecha', 'Ingreso', 'Salida', 'Refrigerio y/o almuerzo', 'Hora Total']
+    peru_tz = pytz.timezone('America/Lima')
+    
+    for colaborador in colaboradores:
+        hoja = wb.create_sheet(title=colaborador.user.first_name)
+        
+        hoja.merge_cells('A1:E1')
+        hoja['A1'] = f'{datetime(anio, mes, 1).strftime("%B").upper()} {anio}'
+        hoja['A1'].font = Font(bold=True)
+        hoja['A1'].alignment = Alignment(horizontal='center')
+        
+        for col_num, encabezado in enumerate(encabezados, 1):
+            hoja[get_column_letter(col_num) + '2'] = encabezado
+        
+        bold_font = Font(bold=True)
+        for cell in hoja["2:2"]:
+            cell.font = bold_font
+        
+        records = AttendanceRecord.objects.filter(
+            collaborator=colaborador,
+            isDelete=False,
+            inRecord__dateTime__year=anio,
+            inRecord__dateTime__month=mes
+        ).order_by('inRecord__dateTime')
+        
+        fila = 3
+        for record in records:
+            fecha_entrada = localtime(record.inRecord.dateTime, peru_tz)
+            hora_entrada = fecha_entrada.strftime('%H:%M')
+            
+            if record.outRecord:
+                fecha_salida = localtime(record.outRecord.dateTime, peru_tz)
+                hora_salida = fecha_salida.strftime('%H:%M')
+                horas_trabajadas, launch = calculateHoursWorked(record)
+            else:
+                hora_salida = "0:00"
+                horas_trabajadas = "0:00"
+            
+            hoja[f'A{fila}'] = fecha_entrada.strftime('%d/%m/%Y')
+            hoja[f'B{fila}'] = hora_entrada
+            hoja[f'C{fila}'] = hora_salida
+            hoja[f'D{fila}'] = "1:00:00" if launch else "0:00:00"
+            hoja[f'E{fila}'] = str(float_to_hms(horas_trabajadas)) if record.outRecord else "0:00:00"
+            
+            fila += 1
+        
+        # Ajuste de columnas
+        for col in range(1, 6):
+            hoja.column_dimensions[get_column_letter(col)].width = 20
+        
+        # Centrar el texto
+        for row in hoja.iter_rows(min_row=1, max_row=fila - 1, min_col=1, max_col=5):
+            for cell in row:
+                cell.alignment = Alignment(horizontal='center')
+    
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename=Reporte_Asistencia_{mes}_{anio}.xlsx'
+    wb.save(response)
+    return response
